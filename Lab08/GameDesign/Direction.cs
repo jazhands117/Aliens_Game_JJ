@@ -1,10 +1,14 @@
-namespace FountainOfObjects.GameDesign
+namespace Lab08.GameDesign
 {
     public enum Direction
     {
         North,
         East,
         South,
-        West
+        West,
+        NorthEast,
+        SouthEast,
+        SouthWest,
+        NorthWest
     }
 }

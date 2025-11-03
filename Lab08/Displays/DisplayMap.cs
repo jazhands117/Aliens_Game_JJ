@@ -1,21 +1,18 @@
-using System;
-using FountainOfObjects.GameDesign;
-using FountainOfObjects.Monsters;
+using System.Drawing;
 
-namespace FountainOfObjects.Displays
+namespace Lab08.Displays
 {
     public static class DisplayMap
     {
         private static bool[,]? discoveredTiles;
         private static RoomType[,]? knownRoomTypes;
-        private static bool[,]? knownMonsterLocations;
-        private static bool fountainDiscovered = false;
+        private static bool[,]? knownAlienLocations;
 
         public static void InitializeMap(int rows, int columns)
         {
             discoveredTiles = new bool[rows, columns];
             knownRoomTypes = new RoomType[rows, columns];
-            knownMonsterLocations = new bool[rows, columns];
+            knownAlienLocations = new bool[rows, columns];
         }
 
         public static void MarkTileDiscovered(Location location, RoomType roomType)
@@ -26,96 +23,172 @@ namespace FountainOfObjects.Displays
 
         public static void MarkMonsterHit(Location location)
         {
-            knownMonsterLocations![location.Row, location.Column] = true;
+            knownAlienLocations![location.Row, location.Column] = true;
         }
 
-        public static bool CheckFountainDiscovery(Game game)
+        public static void ClearMonsterMark(Location location)
         {
-            if (game.Map.GetRoomTypeAt(game.Player.Location) == RoomType.Fountain)
-            {
-                fountainDiscovered = true;
-            }
-            else
-            {
-                fountainDiscovered = false;
-            }
-            return fountainDiscovered;
+            knownAlienLocations![location.Row, location.Column] = false;
         }
 
         public static void ShowMap(Game game)
         {
+            // Do not clear the entire console here; we only overwrite the map area so messages
+            // below the map are preserved. Caller (`DisplayUI.DrawMap`) positions cursor at (0,0).
             Location playerLoc = game.Player.Location;
             int rows = game.Map.Height;
             int cols = game.Map.Width;
+            int tileWidth = 4; // width of " ██ "
 
-            Console.WriteLine();
+            int legendStartX = cols * (tileWidth + 1) + 6; // place legend to the right of the grid
+            int legendStartY = 1;
+
+            // top border (write whole line at known Y to fully overwrite previous content)
+            int lineY = 0;
+            Console.SetCursorPosition(0, lineY);
             Console.ForegroundColor = ConsoleColor.Red;
-
-            //top border//
-            Console.Write("  "); //left margin//
-            for (int c = 0; c < cols; c++)
-                Console.Write("====");
-            Console.WriteLine("=");
+            string topBorder = " ";
+            for (int col = 0; col < cols; col++)
+            {
+                topBorder += "---";
+                if (col < cols - 1)
+                    topBorder += "+";
+            }
+            
+            // pad to full width to erase leftover characters
+            if (topBorder.Length < Console.WindowWidth) topBorder = topBorder.PadRight(Console.WindowWidth);
+            Console.WriteLine(topBorder);
 
             for (int row = 0; row < rows; row++)
             {
+                // content row
+                lineY = row * 2 + 1;
+                Console.SetCursorPosition(0, lineY);
+                // Draw each tile with its colors directly so Console.BackgroundColor applies per tile
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("|"); //left wall//
-
+                Console.Write("|");
+                Console.ResetColor();
                 for (int col = 0; col < cols; col++)
                 {
                     Location currentLoc = new Location(row, col);
                     RoomType roomType = game.Map.GetRoomTypeAt(currentLoc);
+                    bool discovered = game.Map.IsDiscovered(currentLoc);
 
-                    //pick color//
-                    if (row == playerLoc.Row && col == playerLoc.Column)
-                        Console.ForegroundColor = ConsoleColor.Magenta;
-                    else if (roomType == RoomType.Entrance)
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                    else if (fountainDiscovered && roomType == RoomType.Fountain)
-                        Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                    else if (knownMonsterLocations![row, col])
-                        Console.ForegroundColor = ConsoleColor.Green;
-                    else if (knownRoomTypes![row, col] == RoomType.Pit)
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                    else if (!discoveredTiles![row, col])
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                    // determine base background color for the tile (shows room type)
+                    ConsoleColor bgColor = ConsoleColor.Black;
+                    if (!discovered)
+                    {
+                        bgColor = ConsoleColor.Black;
+                    }
                     else
-                        Console.ForegroundColor = ConsoleColor.White;
+                    {
+                        switch (roomType)
+                        {
+                            case RoomType.Pit:
+                                bgColor = ConsoleColor.Yellow;
+                                break;
+                            case RoomType.Airlock:
+                                bgColor = ConsoleColor.Blue;
+                                break;
+                            case RoomType.MechBay:
+                                bgColor = ConsoleColor.DarkYellow;
+                                break;
+                            case RoomType.MedBay:
+                                bgColor = ConsoleColor.Green;
+                                break;
+                            case RoomType.Normal:
+                                bgColor = ConsoleColor.DarkGray;
+                                break;
+                        }
+                        if (knownAlienLocations![row, col])
+                            bgColor = ConsoleColor.Red;
+                    }
 
-                    Console.Write(" ██ "); //filled tile, stolen from the interwebs//
+                    // draw the tile using background color so the room type remains visible
+                    Console.BackgroundColor = bgColor;
+                    string glyph = "   "; // 3 spaces to fill the tile
+                    Console.ForegroundColor = ConsoleColor.Black;
+
+                    if (row == playerLoc.Row && col == playerLoc.Column)
+                    {
+                        // show player glyph on top of the tile
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        glyph = " P ";
+                    }
+                    else if (knownAlienLocations![row,col])
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        glyph = " A ";
+                    }
+
+                    Console.Write(glyph);
+                    Console.ResetColor();
+
+                    // vertical separator between tiles
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("|");
+                    Console.ResetColor();
+                }
+                // clear rest of the line in case previous content was longer
+                int currentCol = Console.CursorLeft;
+                if (currentCol < Console.WindowWidth)
+                {
+                    Console.Write(new string(' ', Console.WindowWidth - currentCol));
                 }
 
+                // separator row (below tiles)
+                lineY = row * 2 + 2;
+                Console.SetCursorPosition(0, lineY);
+                var sepLine = " ";
+                for (int col = 0; col < cols; col++)
+                {
+                    sepLine += "---";
+                    if (col < cols - 1) sepLine += "+";
+                }
+                if (sepLine.Length < Console.WindowWidth) sepLine = sepLine.PadRight(Console.WindowWidth);
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("|"); //right wall//
+                Console.WriteLine(sepLine);
+                Console.ResetColor();
             }
 
-            //bottom border//
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("  ");
-            for (int c = 0; c < cols; c++)
-                Console.Write("====");
-            Console.WriteLine("=");
-
             Console.ResetColor();
 
-            //legend//
-            Console.WriteLine("\n=== Legend ===");
-            Console.ForegroundColor = ConsoleColor.Gray; 
-            Console.WriteLine("██  Unknown");
-            Console.ForegroundColor = ConsoleColor.Green; 
-            Console.WriteLine("██  Safe (Monster defeated)");
-            Console.ForegroundColor = ConsoleColor.Yellow; 
-            Console.WriteLine("██  Pit");
-            Console.ForegroundColor = ConsoleColor.Blue; 
-            Console.WriteLine("██  Entrance");
-            Console.ForegroundColor = ConsoleColor.DarkMagenta; 
-            Console.WriteLine("██  Fountain");
-            Console.ForegroundColor = ConsoleColor.Magenta; 
-            Console.WriteLine("██  Player");
-            Console.ForegroundColor = ConsoleColor.Red; 
-            Console.WriteLine("====  Walls");
-            Console.ResetColor();
+            // print legend beside the map
+            string[] legendLines = new string[] {
+                "=== Legend ===",
+                "██  Airlock",
+                "██  MedBay",
+                "██  MechBay",
+                "██  Pit",
+                "██  Alien",
+                "██  Player",
+                "██  Normal Room",
+                "----  Walls"
+            };
+
+            for (int i = 0; i < legendLines.Length; i++)
+            {
+                Console.SetCursorPosition(legendStartX, legendStartY + i);
+                string line = legendLines[i];
+                ConsoleColor c = ConsoleColor.White;
+                if (line.Contains("Airlock")) c = ConsoleColor.Blue;
+                else if (line.Contains("MedBay")) c = ConsoleColor.Green;
+                else if (line.Contains("MechBay")) c = ConsoleColor.DarkYellow;
+                else if (line.Contains("Pit")) c = ConsoleColor.Yellow;
+                else if (line.Contains("Alien")) c = ConsoleColor.DarkRed;
+                else if (line.Contains("Player")) c = ConsoleColor.Magenta;
+                else if (line.Contains("Walls")) c = ConsoleColor.Red;
+
+                Console.ForegroundColor = c;
+                // write and pad to avoid leftover characters
+                string outLine = line;
+                if (outLine.Length < Console.WindowWidth - legendStartX) outLine = outLine.PadRight(Console.WindowWidth - legendStartX);
+                Console.Write(outLine);
+                Console.ResetColor();
+            }
+
+            // set cursor to line after map and separators
+            Console.SetCursorPosition(0, rows * 2 + 3);
         }
     }
 }

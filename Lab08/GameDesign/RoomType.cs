@@ -1,11 +1,13 @@
-namespace FountainOfObjects.GameDesign
+namespace Lab08.GameDesign
 {
     public enum RoomType
     {
-        Clear,
-        Entrance,
-        Fountain,
+        Unknown,
+        Normal,
+        Airlock,
+        MechBay,
         Pit,
-        OffMap
+        OffMap,
+        MedBay
     }
 }

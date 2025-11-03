@@ -1,0 +1,9 @@
+global using System;
+global using Lab08.GameDesign;
+global using Lab08.Interfaces;
+global using Lab08.Displays;
+global using Lab08.Senses;
+global using Lab08.Aliens;
+global using Lab08.Commands;
+global using Lab08.Items;
+global using System.Collections.Generic;

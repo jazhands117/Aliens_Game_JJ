@@ -1,82 +1,109 @@
-using System;
-using FountainOfObjects.Displays;
-using FountainOfObjects.Monsters;
-using FountainOfObjects.Interfaces;
-using FountainOfObjects.Senses;
-using FountainOfObjects.Commands;
-
-namespace FountainOfObjects.GameDesign
+namespace Lab08.GameDesign
 {
     public class Game
     {
         public Map Map {get;} 
         public Player Player {get;}
-        public Monster[] Monsters {get;}
-        public bool FountainOn {get; set;}
+        public Alien[] Aliens {get;}
         private readonly ISense[] _senses;
+        //expose senses for other classes that need to snag them//
+        public IEnumerable<ISense> Senses => _senses;
+        public bool VisitedMedbay { get; private set; } = false;
+        public bool VisitedMechBay { get; private set; } = false;
+        public bool IsBossFightActive { get; private set; } = false;
+        public GameProgress Progress { get; private set; } = GameProgress.None;
+        public Alien? CurrentAlien { get; set; }
+        // flag to prevent double-moving aliens when an action already moved them (e.g., bullet roll)
+        public bool AliensMovedThisTurn { get; set; } = false;
+        public Dictionary<Location, List<IItem>> ItemsOnMap { get; } = new();
 
-        public Game(Map map, Player player, Monster[] monsters)
+        public Game()
         {
-            Map = map;
-            Player = player;
-            Monsters = monsters;
-            DisplayMap.InitializeMap(map.Height, map.Width);
+            Map = new Map();
+                Location randomStart = Map.GetRandomLocation();
+            Map.SetStart(randomStart);
+            // give the player 5 starting bullets by default
+            Player = new Player(randomStart, initialBullets: 5);
+
+            Location airlock = Map.GetRoomLocation(RoomType.Airlock);
+            Location medbay = Map.GetRoomLocation(RoomType.MedBay);
+            Aliens = new Alien[]
+            {
+                new Xenomorph(Map.GetRandomLocation()),
+                new Xenomorph(Map.GetRandomLocation()),
+                new Facehugger(Map.GetRandomLocation()),
+                new Facehugger(Map.GetRandomNeighbor(airlock)),
+                new Facehugger(Map.GetRandomNeighbor(medbay))
+            };
+
+            DisplayMap.InitializeMap(Map.Height, Map.Width);
 
             _senses = new ISense[]
             {
-                new EntranceSense(),
-                new FountainSense(),
-                new PitSense(),
-                new MaelstromSense(),
-                new AmarokSense()
+                new XenomorphSense(),
+                new FacehuggerSense(),
+                new MedbaySense(),
+                new MechbaySense()
             };
+
+            InitializeItems();
+
+            // ensure player's inventory contains 5 bullets and sync the count
+            Player.Inventory.AddItem(new Lab08.Items.Bullets { Quantity = 5 });
+            Player.UpdateBulletsFromInventory();
         }
 
         public void Run()
         {
             while (!HasWon && Player.IsAlive)
             {
+                //collect status/messages, then draw the map (map prints first, then messages)//
                 DisplayStatus();
-                ICommand command = GetUserInput();
-                Console.Clear();  //clear screen after command input//
-                command.Execute(this);
-                DisplayMap.CheckFountainDiscovery(this);  //check if player has found the fountain//
+                DisplayUI.DrawMap(this);
 
-                if (DisplayMap.CheckFountainDiscovery(this) && FountainOn)
-                {
-                    DisplayStyle.WriteLine("The Fountain glows brightly!", ConsoleColor.Green);
-                    DisplayStyle.WriteLine("You have activated the Fountain of Objects! Now return to the entrance to win!", ConsoleColor.Green);
-                }
+                ICommand command = GetUserInput();
+                // Do not clear the console here; map and messages are redrawn by DisplayUI.DrawMap
+                command.Execute(this);
+
+                // Check all conditions and gather messages before redrawing
+                CheckForAliens();
+                CheckForRoomItems();
+                CheckForMechBay();
+                CheckForMedBay();
+                Player.AdvanceInfection(Map);
                 
-                foreach (Monster monster in Monsters)
-                {
-                    if (monster.Location == Player.Location && monster.IsAlive)
-                    {
-                        monster.Activate(this);
-                    }
-                }
-                if (CurrentRoom == RoomType.Pit)
-                {
-                    Player.Kill("You fell into a pit.");
-                }
+                // Now redraw the map with all gathered messages
+                DisplayUI.DrawMap(this);
                 Console.WriteLine(); //adds a blank line after any command messages//
+                
             }
             if (HasWon)
             {
-                DisplayStyle.WriteLine("The Fountain is activated and you escaped with your life. Good job!", ConsoleColor.Green);
+                Console.Clear();
+                DisplayStyle.WriteLine("The mystery has been solved, and the crew's souls can finally be at peace.", ConsoleColor.Green);
+                Console.WriteLine();
                 DisplayStyle.WriteLine("YOU WIN! Congratulations!", ConsoleColor.Green);
+                Console.WriteLine();
+                DisplayStyle.WriteLine("Press ENTER to continue:", ConsoleColor.Green);
+                Console.ReadLine();
+                StatsScreen.DisplayStats(this);
             }
             else
             {
-                DisplayStyle.WriteLine(Player.CauseOfDeath, ConsoleColor.Red);
+                Console.Clear();
+                Console.WriteLine();
                 DisplayStyle.WriteLine("YOU DIED. Game over.", ConsoleColor.Red);
+                DisplayStyle.WriteLine($"Cause of death: {Player.CauseOfDeath}", ConsoleColor.Red);
+                Console.WriteLine();
+                DisplayStyle.WriteLine("Press ENTER to continue:", ConsoleColor.Yellow);
+                Console.ReadLine();
+                StatsScreen.DisplayStats(this);
             }
-        }    
+        }
 
         private void DisplayStatus()
         {
-            DisplayStyle.WriteLine($"You are in room {Player.Location}.", ConsoleColor.White);
-            DisplayStyle.WriteLine($"You have {Player.ArrowsRemaining} arrows remaining.", ConsoleColor.Gray);
+            DisplayStyle.WriteLine($"Health: {Player.Health}", ConsoleColor.White);
             foreach (ISense sense in _senses)
             {
                 if (sense.Detect(this))
@@ -85,44 +112,235 @@ namespace FountainOfObjects.GameDesign
                 }
             }
         }
+        
+        private void InitializeItems()
+        {
+            var random = new Random();
+            //had AI teach me how to do func//
+            void PlaceItem(IItem item, Func<Location> locationSelect)
+            {
+                Location loc = locationSelect();
+                if (!ItemsOnMap.ContainsKey(loc))
+                {
+                    ItemsOnMap[loc] = new List<IItem>();
+                }
+                ItemsOnMap[loc].Add(item);
+            }
+            //bullets//
+            // place one batch adjacent to the Airlock, then five more random batches (total 6 * 5 = 30)
+            Location airlockLoc = Map.GetRoomLocation(RoomType.Airlock);
+            // place first batch adjacent to airlock
+            PlaceItem(new Bullets { Quantity = 5 }, () => Map.GetRandomNeighbor(airlockLoc));
+            for (int i = 1; i < 3; i++)
+            {
+                PlaceItem(new Bullets { Quantity = 5 }, () => Map.GetRandomLocation());
+            }
+            //bandages//
+            for (int i = 0; i < 3; i++)
+            {
+                PlaceItem(new Bandages { Quantity = 1 }, () => Map.GetRandomLocation());
+            }
+            Location medBay = Map.GetRoomLocation(RoomType.MedBay);
+            PlaceItem(new Bandages { Quantity = 3 }, () => medBay);
 
-        private ICommand GetUserInput()
+            //charge nodes//
+            for (int i = 0; i < 4; i++)
+            {
+                PlaceItem(new PlasmaCharge { Quantity = 2 }, () => Map.GetRandomLocation());
+            }
+
+            //weapons//
+            PlaceItem(new WoodenBat { Quantity = 1 }, () => Map.GetRandomLocation());
+            PlaceItem(new Machete { Quantity = 1 }, () => Map.GetRandomLocation());
+            PlaceItem(new PlasmaCutter { Quantity = 1 }, () => Map.GetRandomLocation());
+            // place a Power Supply somewhere on the map so the Mech Bay can be activated
+            PlaceItem(new Lab08.Items.PowerSupply { Quantity = 1 }, () => Map.GetRandomLocation());
+        }
+
+        private ICommand GetUserInput(bool inCombat = false, Alien? targetAlien = null, bool canUseSpecial = false)
         {
             while (true)
             {
-                DisplayStyle.WriteLine("What would you like to do?", ConsoleColor.White);
+                // prompt must appear immediately below the map, so write it directly
+                if (inCombat && targetAlien != null)
+                {
+                    DisplayUI.WriteMessage($"Press SPACE to attack!", ConsoleColor.White);
+                }
+                else if (canUseSpecial)
+                {
+                    DisplayUI.WriteMessage($"Press Y to use the item, N to cancel.", ConsoleColor.White);
+                }
+                else
+                {
+                    DisplayUI.WriteMessage("What would you like to do?", ConsoleColor.White);
+                }
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                string? raw = Console.ReadLine();
-                string input = (raw ?? string.Empty).Trim().ToLower();
 
-                if (input == "move north") 
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                ConsoleKey key = keyInfo.Key;
+
+                if (inCombat && key == ConsoleKey.Spacebar && targetAlien != null)
+                {
+                    return new AttackCommand(targetAlien);
+                }
+                if (key == ConsoleKey.W)
                     return new MoveCommand(Direction.North);
-                if (input == "move south") 
+                if (key == ConsoleKey.S)
                     return new MoveCommand(Direction.South);
-                if (input == "move east") 
+                if (key == ConsoleKey.D)
                     return new MoveCommand(Direction.East);
-                if (input == "move west") 
+                if (key == ConsoleKey.A)
                     return new MoveCommand(Direction.West);
-                if (input == "shoot north") 
-                    return new ShootCommand(Direction.North);
-                if (input == "shoot south") 
-                    return new ShootCommand(Direction.South);
-                if (input == "shoot east") 
-                    return new ShootCommand(Direction.East);
-                if (input == "shoot west") 
-                    return new ShootCommand(Direction.West);
-                if (input == "enable fountain") 
-                    return new EnableFountainCommand();
-                if (input == "help") 
+                if (key == ConsoleKey.R)
+                    return new UseBulletCommand();
+                if (key == ConsoleKey.I)
+                    return new InventoryCommand();
+                if (key == ConsoleKey.H)
                     return new HelpCommand();
-                if (input == "map")
-                    return new MapCommand();
 
-                DisplayStyle.WriteLine($"'{input}' is not a valid command. Type 'help' for list of commands.", ConsoleColor.Magenta);
+                //immediate feedback for invalid input: write and redraw map so it's visible//
+                DisplayUI.WriteMessage($"Not a valid command. Type 'h' for list of commands.", ConsoleColor.Magenta);
+                DisplayUI.DrawMap(this);
             }
         }
 
-        public bool HasWon => FountainOn && CurrentRoom == RoomType.Entrance;
+        private void CheckForAliens()
+        {
+            foreach (Alien alien in Aliens)
+            {
+                if (alien.Location == Player.Location && alien.IsAlive)
+                {
+                    alien.Act(this, Player, Map);
+                }
+            }
+            // move aliens unless they were already moved by an action (e.g., bullet roll)
+            if (!AliensMovedThisTurn)
+            {
+                foreach (Alien alien in Aliens)
+                {
+                    if (!alien.IsAlive)
+                        continue;
+                    if (alien is Facehugger facehugger)
+                    {
+                        facehugger.MoveRandomly(this);
+                    }
+                    else if (alien is Xenomorph xenomorph)
+                    {
+                        xenomorph.MoveRandomly(this);
+                    }
+                }
+            }
+            else
+            {
+                // reset the flag for the next turn
+                AliensMovedThisTurn = false;
+            }
+        }
+
+        //had LOTS of help here//
+        private void CheckForRoomItems()
+        {
+            if (ItemsOnMap.TryGetValue(Player.Location, out List<IItem>? itemsInRoom))
+            {
+                foreach (var item in itemsInRoom.ToList())
+                {
+                    string itemName;
+                    if (item.Quantity > 1)
+                    {
+                        itemName = item.Quantity + " " + item.Name;
+                    }
+                    else
+                    {
+                        itemName = item.Name;
+                    }
+
+                    var prompt = new SpecialCommand("You find " + itemName + ". Add to your inventory? (y/n)");
+                    prompt.Execute(this);
+                    if (prompt.Choice)
+                    {
+                        Player.Inventory.AddItem(item);
+                        // if bullets were picked up, sync the player's bullets count
+                        if (item.Name.Equals("Bullets", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Player.UpdateBulletsFromInventory();
+                        }
+                        DisplayStyle.WriteLine("You picked up " + itemName + ".", ConsoleColor.Cyan);
+                    }
+                    else
+                    {
+                        DisplayStyle.WriteLine("You decide to leave the " + itemName + ".", ConsoleColor.Cyan);
+                    }
+                }
+                ItemsOnMap.Remove(Player.Location);
+            }
+        }
+
+        private void CheckForMedBay()
+        {
+            RoomType type = Map.GetRoomTypeAt(Player.Location);
+            if (type == RoomType.MedBay)
+            {
+                DisplayUI.ClearMessageHistory();
+                if (!VisitedMedbay)
+                {
+                    VisitedMedbay = true;
+                    DisplayStyle.WriteLine("You have reached the MedBay.", ConsoleColor.Green);
+                    MedbayStory.DisplayMedbayStory();
+                }
+                else
+                {
+                    DisplayStyle.WriteLine("You've returned to the Med Bay. The bodies are still.", ConsoleColor.Cyan);
+                }
+            }
+        }
+
+        private void CheckForMechBay()
+        {
+            RoomType type = Map.GetRoomTypeAt(Player.Location);
+            if (type == RoomType.MechBay)
+            {
+                DisplayUI.ClearMessageHistory();
+                if (!VisitedMechBay)
+                    VisitedMechBay = true;
+                var powerSupply = Player.Inventory.Items.FirstOrDefault(item => item.Name == "Power Supply");
+                if (powerSupply != null)
+                {
+                    DisplayStyle.WriteLine("The Power Supply you found will power the Mech Suit in this room.", ConsoleColor.Cyan);
+                    powerSupply.Use(this);
+                }
+                else
+                {
+                    DisplayStyle.WriteLine("The Mech Suit stands dormant. You need a Power Supply to activate it.", ConsoleColor.Cyan);
+                }
+            }
+        }
+
+        public void StartBossFight()
+        {
+            DisplayUI.ClearMessageHistory();
+            DisplayStyle.WriteLine("You climb shakily into the Mech Suit. The controls feel intuitive as you take command of the powerful machine.", ConsoleColor.Cyan);
+            DisplayStyle.WriteLine("The ship trembles and groans as something inside the sealed area begins to pound on the walls.", ConsoleColor.Cyan);
+            DisplayStyle.WriteLine("Your finger hovers over the button to breach the sealed area. This is it.", ConsoleColor.Cyan);
+            Console.WriteLine();
+            System.Threading.Thread.Sleep(1000);
+            DisplayStyle.WriteLine("Press ENTER to continue", ConsoleColor.Yellow);
+            Console.ReadLine();
+            DisplayUI.ClearMessageHistory();
+            DisplayStyle.WriteLine("TUNE IN NEXT TIME FOR THE EPIC BOSS FIGHT!", ConsoleColor.Yellow);
+            DisplayStyle.WriteLine("The author will complete this soon, after a dang grade is received. :D", ConsoleColor.Yellow);
+            Player.MarkBossDiscovered();
+            IsBossFightActive = true;
+            DisplayStyle.WriteLine("Press ENTER to continue.", ConsoleColor.Blue);
+            Console.ReadLine();
+
+            StatsScreen.DisplayStats(this);
+        }
+
+        public void TrackProgress(GameProgress progress)
+        {
+            Progress |= progress; // AI helped here
+        }
+        public bool HasWon => VisitedMedbay && CurrentRoom == RoomType.Airlock;
         public RoomType CurrentRoom => Map.GetRoomTypeAt(Player.Location);
     }
 }

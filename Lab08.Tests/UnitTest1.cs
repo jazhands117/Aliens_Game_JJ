@@ -1,15 +1,18 @@
+using NUnit.Framework;
+using Lab08.GameDesign;
+
 namespace Lab08.Tests;
 
-public class Tests
+// This file has been split into:
+// - MapTests.cs - map functionality tests
+// - ItemTests.cs - item placement and weapon usage tests
+// - AlienTests.cs - alien behavior tests
+// - BandageTests.cs - bandage healing tests
+public class TestInfo
 {
-    [SetUp]
-    public void Setup()
-    {
-    }
-
     [Test]
-    public void Test1()
+    public void Info()
     {
-        Assert.Pass();
+        Assert.Pass("Tests have been organized into specific files by domain area.");
     }
 }

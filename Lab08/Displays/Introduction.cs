@@ -1,41 +1,65 @@
-using System;
-namespace FountainOfObjects.Displays
+namespace Lab08.Displays
 {
     public static class Introduction
     {
         public static void DisplayIntro()
         {
-            //title screen!//
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("=========================================");
+            Console.WriteLine("                A L I E N S              ");
+            Console.WriteLine("=========================================");
+            Console.WriteLine();
+            //have a slight delay time here//
+            System.Threading.Thread.Sleep(3000);
+            Console.WriteLine("Press ENTER to continue...");
+            Console.ReadLine();  // Keep the red color for the next section
+
+            Console.Clear();
+            Console.WriteLine("SOS RECEIVED FROM DEEP SPACE MINING VESSEL 'THE COVENANT'");
+            Console.WriteLine();
+            Console.WriteLine("\"THIS IS THE COVENANT. WE ARE UNDER A-------- SEND H------ SIGNAL NOT CLEAR ---- SEND HELP ----\"");
+            Console.WriteLine();
+            System.Threading.Thread.Sleep(3000);
+            Console.ResetColor();
+            Console.WriteLine("The last transmission from the Covenant was garbled and incomplete.");
+            Console.WriteLine("You are a simple radio transmitter technician, sent to investigate the disturbance.");
+            Console.WriteLine();
+            System.Threading.Thread.Sleep(3000);
+            Console.WriteLine("As you dock with the Covenant, you notice that all lights on the ship are off.");
+            Console.WriteLine("The airlock is functioning, so you cautiously make your way inside.");
+            Console.WriteLine();
+            System.Threading.Thread.Sleep(3000);
+            Console.WriteLine("The ship's interior is dark and silent. Your flashlight barely penetrates the gloom.");
+            Console.WriteLine("However, your motion detector indicates movement in the ship's cavernous interior.");
+            Console.WriteLine();
+            System.Threading.Thread.Sleep(3000);
+            Console.WriteLine("Your mission is to locate the crew and determine the cause of the strange signal.");
+            Console.WriteLine();
+            System.Threading.Thread.Sleep(2000);
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Press ENTER to continue...");
+            Console.ReadLine();
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("=======================================");
-            Console.WriteLine("         The Fountain of Objects       ");
-            Console.WriteLine("=======================================");
+            Console.WriteLine("-----------------------------");
+            Console.WriteLine("----- GAME INSTRUCTIONS -----");
+            Console.WriteLine("-----------------------------");
             Console.WriteLine();
-            Console.WriteLine("Press ENTER to continue...");
-            Console.ResetColor();
-            Console.ReadLine();
+            Console.WriteLine("Available commands:");
+            Console.WriteLine("  'w'  - Move one room forward");
+            Console.WriteLine("  's'  - Move one room backward");
+            Console.WriteLine("  'd'  - Move one room to the right");
+            Console.WriteLine("  'a'  - Move one room to the left");
+            Console.WriteLine("  'r'  - Roll a bullet to check a nearby room");
+            Console.WriteLine("  'i'  - Open Inventory");
+            Console.WriteLine("  'h'  - Show commands message");
 
-            //exact text described by the book//
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("You enter the Cavern of Objects, a maze filled with dangerous pits, in search of the Fountain of Objects.");
-            Console.WriteLine("Light is visible only in the entrance, and no other light is seen anywhere in the caverns.");
-            Console.WriteLine("You must navigate the Caverns with your other senses.");
-            Console.WriteLine("Find the Fountain of Objects, activate it, and return to the entrance.");
-            Console.WriteLine("Look out for pits. You will feel a breeze if a pit is in an adjacent room. If you enter a room with a pit, you will die.");
-            Console.WriteLine("Maelstroms are violent forces of sentient wind. Entering a room with one could transport you to any other location in the caverns.");
-            Console.WriteLine("You will be able to hear their whipping wind in nearby rooms.");
-            Console.WriteLine("Amaroks roam the caverns. Encountering one is certain death, but they stink and can be smelled in nearby rooms.");
-            Console.WriteLine("You carry with you a bow and a quiver of arrows. You can use them to shoot monsters in the caverns or check for pits.");
-            Console.WriteLine("Be warned: you have a limited supply of arrows.");
-            Console.WriteLine("Good luck, traveller.");
-            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine();
-            Console.WriteLine("Press ENTER to begin your journey...");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Press ENTER to begin...");
             Console.ResetColor();
             Console.ReadLine();
-            Console.Clear();
         }
     }
 }

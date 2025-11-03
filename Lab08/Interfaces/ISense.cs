@@ -1,7 +1,4 @@
-using System;
-using FountainOfObjects.GameDesign;
-
-namespace FountainOfObjects.Interfaces
+namespace Lab08.Interfaces
 {
     public interface ISense
     {
