@@ -104,7 +104,7 @@ namespace Lab08.GameDesign
             if (alien == null || !alien.IsAlive)
                 return;
 
-            //had AI help me on this line//
+            // had AI help me on this line
             IItem? usedWeapon = weapon ?? EquippedWeapon;
             int damage;
             string attackDescription;
@@ -134,7 +134,7 @@ namespace Lab08.GameDesign
             }
             else
             {
-                damage = 1; //fist damage//
+                damage = 1; // fist damage
                 attackDescription = $"You punch the alien with your fists, dealing {damage} damage.";
             }
             DisplayStyle.WriteLine(attackDescription, ConsoleColor.Green);
@@ -223,10 +223,10 @@ namespace Lab08.GameDesign
         {
             if (isInfected)
             {
-                return; //already infected//
+                return; // already infected
             }
             isInfected = true;
-            infectionCountdown = turns; //number of turns before death//
+            infectionCountdown = turns; // number of turns before death
             DisplayStyle.WriteLine("You feel sharp pains in your chest. Something moves. Could it be your heart?", ConsoleColor.Yellow);
         }
 

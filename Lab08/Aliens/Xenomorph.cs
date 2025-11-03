@@ -14,7 +14,7 @@ namespace Lab08.Aliens
             IsAlive = true;
         }
 
-        //add damage to player if in same location, remove instakill//
+        // add damage to player if in same location, remove instakill
         public override void Act(Game game, Player player, Map map)
         {
             if (Location.Equals(player.Location) && IsAlive)
@@ -24,7 +24,7 @@ namespace Lab08.Aliens
                 DisplayStyle.WriteLine("Out of the shadows, the Xenomorph attacks!", ConsoleColor.Red);
                 DisplayStyle.WriteLine("It hisses at you, its razor-sharp tail whipping through the air.", ConsoleColor.Red);
 
-                //COMBAT SEQUENCE//
+                // COMBAT SEQUENCE
                 DisplayStyle.WriteLine("Press SPACE to attack the Xenomorph!", ConsoleColor.Yellow);
                 ConsoleKeyInfo keyInfo;
                 do

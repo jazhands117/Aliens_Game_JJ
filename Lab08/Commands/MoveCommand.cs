@@ -12,8 +12,8 @@ namespace Lab08.Commands
         public void Execute(Game game)
         {
             Location newLocation = game.Player.Location.Move(_direction);
-            //if the location is off-map, GetRoomTypeAt will return OffMap//
-            //remember whether this room was already discovered before we move into it//
+            // if the location is off-map, GetRoomTypeAt will return OffMap
+            // remember whether this room was already discovered before we move into it
             bool wasDiscovered = game.Map.IsDiscovered(newLocation);
 
             if (game.Map.GetRoomTypeAt(newLocation) != RoomType.OffMap)
@@ -35,7 +35,6 @@ namespace Lab08.Commands
                     sense.Notify(game);
                 }
             }
-            // Alien turns are handled centrally by Game.CheckForAliens after the command executes.
 
             if (game.CurrentRoom == RoomType.Pit && !wasDiscovered)
             {

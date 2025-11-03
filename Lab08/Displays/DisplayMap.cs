@@ -33,12 +33,10 @@ namespace Lab08.Displays
 
         public static void ShowMap(Game game)
         {
-            // Do not clear the entire console here; we only overwrite the map area so messages
-            // below the map are preserved. Caller (`DisplayUI.DrawMap`) positions cursor at (0,0).
             Location playerLoc = game.Player.Location;
             int rows = game.Map.Height;
             int cols = game.Map.Width;
-            int tileWidth = 4; // width of " ██ "
+            int tileWidth = 4; 
 
             int legendStartX = cols * (tileWidth + 1) + 6; // place legend to the right of the grid
             int legendStartY = 1;
@@ -64,7 +62,6 @@ namespace Lab08.Displays
                 // content row
                 lineY = row * 2 + 1;
                 Console.SetCursorPosition(0, lineY);
-                // Draw each tile with its colors directly so Console.BackgroundColor applies per tile
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write("|");
                 Console.ResetColor();
@@ -74,7 +71,6 @@ namespace Lab08.Displays
                     RoomType roomType = game.Map.GetRoomTypeAt(currentLoc);
                     bool discovered = game.Map.IsDiscovered(currentLoc);
 
-                    // determine base background color for the tile (shows room type)
                     ConsoleColor bgColor = ConsoleColor.Black;
                     if (!discovered)
                     {
@@ -104,9 +100,8 @@ namespace Lab08.Displays
                             bgColor = ConsoleColor.Red;
                     }
 
-                    // draw the tile using background color so the room type remains visible
                     Console.BackgroundColor = bgColor;
-                    string glyph = "   "; // 3 spaces to fill the tile
+                    string glyph = "   "; 
                     Console.ForegroundColor = ConsoleColor.Black;
 
                     if (row == playerLoc.Row && col == playerLoc.Column)

@@ -10,7 +10,7 @@ namespace Lab08.Items
 
         public void Use(Game game)
         {
-            //placeholder, goes into the plasma cutter//
+            // placeholder, goes into the plasma cutter
         }
     }
 }

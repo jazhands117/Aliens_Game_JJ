@@ -17,7 +17,6 @@ namespace Lab08.Commands
             if (_isTest)
                 return;
                 
-            // Write the prompt directly without requiring ENTER
             DisplayUI.WriteMessage(_prompt, ConsoleColor.Cyan);
             while (true)
             {

@@ -6,7 +6,6 @@ namespace Lab08.GameDesign
         public Player Player {get;}
         public Alien[] Aliens {get;}
         private readonly ISense[] _senses;
-        //expose senses for other classes that need to snag them//
         public IEnumerable<ISense> Senses => _senses;
         public bool VisitedMedbay { get; private set; } = false;
         public bool VisitedMechBay { get; private set; } = false;
@@ -57,12 +56,11 @@ namespace Lab08.GameDesign
         {
             while (!HasWon && Player.IsAlive)
             {
-                //collect status/messages, then draw the map (map prints first, then messages)//
+                // collect status/messages, then draw the map (map prints first, then messages)
                 DisplayStatus();
                 DisplayUI.DrawMap(this);
 
                 ICommand command = GetUserInput();
-                // Do not clear the console here; map and messages are redrawn by DisplayUI.DrawMap
                 command.Execute(this);
 
                 // Check all conditions and gather messages before redrawing
@@ -72,9 +70,8 @@ namespace Lab08.GameDesign
                 CheckForMedBay();
                 Player.AdvanceInfection(Map);
                 
-                // Now redraw the map with all gathered messages
                 DisplayUI.DrawMap(this);
-                Console.WriteLine(); //adds a blank line after any command messages//
+                Console.WriteLine(); 
                 
             }
             if (HasWon)
@@ -116,7 +113,7 @@ namespace Lab08.GameDesign
         private void InitializeItems()
         {
             var random = new Random();
-            //had AI teach me how to do func//
+            // had AI teach me how to do func :D
             void PlaceItem(IItem item, Func<Location> locationSelect)
             {
                 Location loc = locationSelect();
@@ -126,8 +123,7 @@ namespace Lab08.GameDesign
                 }
                 ItemsOnMap[loc].Add(item);
             }
-            //bullets//
-            // place one batch adjacent to the Airlock, then five more random batches (total 6 * 5 = 30)
+            // bullets
             Location airlockLoc = Map.GetRoomLocation(RoomType.Airlock);
             // place first batch adjacent to airlock
             PlaceItem(new Bullets { Quantity = 5 }, () => Map.GetRandomNeighbor(airlockLoc));
@@ -135,7 +131,7 @@ namespace Lab08.GameDesign
             {
                 PlaceItem(new Bullets { Quantity = 5 }, () => Map.GetRandomLocation());
             }
-            //bandages//
+            // bandages
             for (int i = 0; i < 3; i++)
             {
                 PlaceItem(new Bandages { Quantity = 1 }, () => Map.GetRandomLocation());
@@ -143,17 +139,16 @@ namespace Lab08.GameDesign
             Location medBay = Map.GetRoomLocation(RoomType.MedBay);
             PlaceItem(new Bandages { Quantity = 3 }, () => medBay);
 
-            //charge nodes//
+            // charge nodes
             for (int i = 0; i < 4; i++)
             {
                 PlaceItem(new PlasmaCharge { Quantity = 2 }, () => Map.GetRandomLocation());
             }
 
-            //weapons//
+            // weapons
             PlaceItem(new WoodenBat { Quantity = 1 }, () => Map.GetRandomLocation());
             PlaceItem(new Machete { Quantity = 1 }, () => Map.GetRandomLocation());
             PlaceItem(new PlasmaCutter { Quantity = 1 }, () => Map.GetRandomLocation());
-            // place a Power Supply somewhere on the map so the Mech Bay can be activated
             PlaceItem(new Lab08.Items.PowerSupply { Quantity = 1 }, () => Map.GetRandomLocation());
         }
 
@@ -161,7 +156,6 @@ namespace Lab08.GameDesign
         {
             while (true)
             {
-                // prompt must appear immediately below the map, so write it directly
                 if (inCombat && targetAlien != null)
                 {
                     DisplayUI.WriteMessage($"Press SPACE to attack!", ConsoleColor.White);
@@ -198,7 +192,6 @@ namespace Lab08.GameDesign
                 if (key == ConsoleKey.H)
                     return new HelpCommand();
 
-                //immediate feedback for invalid input: write and redraw map so it's visible//
                 DisplayUI.WriteMessage($"Not a valid command. Type 'h' for list of commands.", ConsoleColor.Magenta);
                 DisplayUI.DrawMap(this);
             }
@@ -237,7 +230,7 @@ namespace Lab08.GameDesign
             }
         }
 
-        //had LOTS of help here//
+        // had LOTS of help here
         private void CheckForRoomItems()
         {
             if (ItemsOnMap.TryGetValue(Player.Location, out List<IItem>? itemsInRoom))

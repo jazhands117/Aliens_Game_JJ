@@ -10,10 +10,10 @@ namespace Lab08.Displays
             Console.WriteLine("                A L I E N S              ");
             Console.WriteLine("=========================================");
             Console.WriteLine();
-            //have a slight delay time here//
+            // have a slight delay time here
             System.Threading.Thread.Sleep(3000);
             Console.WriteLine("Press ENTER to continue...");
-            Console.ReadLine();  // Keep the red color for the next section
+            Console.ReadLine();
 
             Console.Clear();
             Console.WriteLine("SOS RECEIVED FROM DEEP SPACE MINING VESSEL 'THE COVENANT'");

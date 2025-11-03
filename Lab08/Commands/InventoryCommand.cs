@@ -61,7 +61,6 @@ namespace Lab08.Commands
                         {
                             if (item.Quantity > 0)
                             {
-                                // calling Use will execute the roll which consumes a bullet from inventory
                                 item.Use(game);
                             }
                             else
@@ -140,7 +139,6 @@ namespace Lab08.Commands
                         confirm.Execute(game);
                         if (confirm.Choice)
                         {
-                            // item.Use handles applying healing and consuming the bandage from inventory
                             item.Use(game);
                         }
                         break;

@@ -21,12 +21,12 @@ namespace Lab08.Aliens
 
         public virtual void MoveRandomly(Game game)
         {
-            //override in each alien motion cause they're different//
+            // override in each alien motion cause they're different
         }
 
         public virtual void MoveTowardsPlayer(Game game)
         {
-            //override in each alien motion cause they're different//
+            // override in each alien motion cause they're different
         }
 
         public void Kill(string cause)

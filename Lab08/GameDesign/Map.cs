@@ -39,8 +39,7 @@ namespace Lab08.GameDesign
             var mechbay = GetUniqueRandomLocation();
             SetRoomType(mechbay, RoomType.MechBay);
 
-            //placing pits randomly//
-            //increase to 10 pits as requested
+            // placing pits randomly
             for (int i = 0; i < 10; i++)
             {
                 var pitLocation = GetUniqueRandomLocation();
@@ -142,12 +141,12 @@ namespace Lab08.GameDesign
         {
             var adjacentRooms = new List<Location>();
 
-            //check all 8 surrounding positions (including diagonals)//
+            // check all 8 surrounding positions (including diagonals)
             for (int dx = -1; dx <= 1; dx++)
             {
                 for (int dy = -1; dy <= 1; dy++)
                 {
-                    //skip the center position (the location itself)//
+                    // skip the center position (the location itself)
                     if (dx == 0 && dy == 0) continue;
 
                     Location neighbor = new Location(loc.Row + dx, loc.Column + dy);

@@ -11,13 +11,13 @@ namespace Lab08.Aliens
             _random = new Random();
         }
 
-        // Test constructor that allows seeding the random number generator
+        // Test constructor that allows seeding random
         public Facehugger(Location position, Random random) : base(position, "Facehugger")
         {
             _random = random ?? new Random();
         }
 
-        //override Activate so we have access to the full Game object (monsters, fountain state, etc.)//
+        // override Activate so we have access to the full Game object (monsters, fountain state, etc.)
         public override void Activate(Game game)
         {
             if (!Location.Equals(game.Player.Location))
@@ -36,7 +36,7 @@ namespace Lab08.Aliens
 
         private void Encounter(Game? game, Player player, Map map, bool allowAliens)
         {
-            int possibleAction = _random.Next(2); //0 = facehug, 1 = transport//
+            int possibleAction = _random.Next(2); // 0 = facehug, 1 = transport
 
             if (possibleAction == 0)
             {
@@ -66,17 +66,16 @@ namespace Lab08.Aliens
                 DisplayStyle.WriteLine("As the creature lunges at you, you duck and sprint blindly through the corridors.", ConsoleColor.Cyan);
                 DisplayStyle.WriteLine("After a dizzying series of turns, you're no longer sure where you are, or if you've even been here before. You consult your map.", ConsoleColor.Cyan);
 
-                // Keep trying until we successfully move with Manhattan distance 2-6
                 Location newPlayerLocation;
                 Location startLocation = player.Location;
                 int manhattanDistance;
                 int attempts = 0;
-                const int maxAttempts = 100; // Prevent infinite loop
+                const int maxAttempts = 100; // AI's version to prevent infinite loop
 
                 do
                 {
                     newPlayerLocation = startLocation;
-                    int targetDistance = _random.Next(2, 7); //random distance between 2 and 6//
+                    int targetDistance = _random.Next(2, 7); // random distance between 2 and 6
 
                     // Try to move the target distance
                     for (int i = 0; i < targetDistance; i++)
@@ -204,7 +203,5 @@ namespace Lab08.Aliens
                 Location = candidate;
             }
         }
-        
-        // use base.IsLocationOccupied to check for occupation
     }
 }

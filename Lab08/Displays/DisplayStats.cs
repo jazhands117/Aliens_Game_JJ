@@ -42,7 +42,7 @@ namespace Lab08.Displays
             DisplayStyle.WriteLine("Press ENTER to exit. Thanks for playing!", ConsoleColor.Blue);
             Console.ReadLine();
 
-            //kills process//
+            // kills process
             Environment.Exit(0);
         }
     }
