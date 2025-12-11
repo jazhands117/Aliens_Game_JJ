@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iA6rMiUlGuU=",
+  "dgSpecHash": "KbPHz2kEZxk=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\lab-8-fountain-of-objects-2-jazhands117\\Lab08.Main\\Lab08.Main.csproj",
+  "projectFilePath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\Aliens_Game\\Lab08.Main\\Lab08.Main.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Jasmine Johnson\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\Jasmine Johnson\\.nuget\\packages\\microsoft.dotnet.platformabstractions\\3.1.6\\microsoft.dotnet.platformabstractions.3.1.6.nupkg.sha512",

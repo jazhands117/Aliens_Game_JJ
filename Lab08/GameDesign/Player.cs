@@ -290,5 +290,11 @@ namespace Lab08.GameDesign
                 DisplayStyle.WriteLine("You feel relief as the alien within you stops moving. But is it really cured?", ConsoleColor.Green);
             }
         }
+
+        // Allow temporarily setting player health (used for boss fights or special events)
+        public void SetHealth(int value)
+        {
+            Health = value;
+        }
     }
 }

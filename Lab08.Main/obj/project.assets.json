@@ -888,11 +888,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Jasmine Johnson\\my-code-dir\\lab-8-fountain-of-objects-2-jazhands117\\Lab08.Main\\Lab08.Main.csproj",
+      "projectUniqueName": "C:\\Users\\Jasmine Johnson\\my-code-dir\\Aliens_Game\\Lab08.Main\\Lab08.Main.csproj",
       "projectName": "Lab08.Main",
-      "projectPath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\lab-8-fountain-of-objects-2-jazhands117\\Lab08.Main\\Lab08.Main.csproj",
+      "projectPath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\Aliens_Game\\Lab08.Main\\Lab08.Main.csproj",
       "packagesPath": "C:\\Users\\Jasmine Johnson\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\lab-8-fountain-of-objects-2-jazhands117\\Lab08.Main\\obj\\",
+      "outputPath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\Aliens_Game\\Lab08.Main\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Jasmine Johnson\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -907,8 +907,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\Jasmine Johnson\\my-code-dir\\lab-8-fountain-of-objects-2-jazhands117\\Lab08\\Lab08.csproj": {
-              "projectPath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\lab-8-fountain-of-objects-2-jazhands117\\Lab08\\Lab08.csproj"
+            "C:\\Users\\Jasmine Johnson\\my-code-dir\\Aliens_Game\\Lab08\\Lab08.csproj": {
+              "projectPath": "C:\\Users\\Jasmine Johnson\\my-code-dir\\Aliens_Game\\Lab08\\Lab08.csproj"
             }
           }
         }
@@ -943,7 +943,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.415/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.416/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

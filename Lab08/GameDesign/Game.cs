@@ -318,15 +318,106 @@ namespace Lab08.GameDesign
             System.Threading.Thread.Sleep(1000);
             DisplayStyle.WriteLine("Press ENTER to continue", ConsoleColor.Yellow);
             Console.ReadLine();
+            // Begin the actual boss sequence narrative
             DisplayUI.ClearMessageHistory();
-            DisplayStyle.WriteLine("TUNE IN NEXT TIME FOR THE EPIC BOSS FIGHT!", ConsoleColor.Yellow);
-            DisplayStyle.WriteLine("The author will complete this soon, after a dang grade is received. :D", ConsoleColor.Yellow);
-            Player.MarkBossDiscovered();
-            IsBossFightActive = true;
-            DisplayStyle.WriteLine("Press ENTER to continue.", ConsoleColor.Blue);
+            DisplayStyle.WriteLine("A low, guttural rumble echoes from behind the sealed bulkhead. The hull shivers.", ConsoleColor.Yellow);
+            DisplayStyle.WriteLine("You hear the skittering of many legs and a sound like a hundred chests inhaling at once.", ConsoleColor.Yellow);
+            DisplayStyle.WriteLine("Something massive moves within. The Queen is awake.", ConsoleColor.Yellow);
+            Console.WriteLine();
+            DisplayStyle.WriteLine("Press ENTER to continue", ConsoleColor.Yellow);
             Console.ReadLine();
 
-            StatsScreen.DisplayStats(this);
+            // Load the ASCII art for the queen
+            string queenAscii = "";
+            try
+            {
+                queenAscii = File.ReadAllText(Path.Combine("Aliens", "Queen.txt"));
+            }
+            catch
+            {
+                queenAscii = "[Alien Queen]";
+            }
+
+            // Prepare boss and player stats for the fight
+            Player.MarkBossDiscovered();
+            IsBossFightActive = true;
+            Player.SetHealth(250); // temporary boss-fight health
+            var queen = new AlienQueen(Player.Location);
+
+            // Print the queen art and prompt
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine(queenAscii);
+            DisplayStyle.WriteLine("Press SPACE to attack!", ConsoleColor.Yellow);
+
+            // Cancellation token to stop boss thread when fight ends
+            var bossCts = new CancellationTokenSource();
+
+            // Boss attack thread: deals 20 damage every 1 second
+            Thread bossThread = new Thread(() =>
+            {
+                while (!bossCts.Token.IsCancellationRequested && queen.IsAlive && Player.IsAlive)
+                {
+                    Thread.Sleep(1000);
+                    lock (this)
+                    {
+                        if (!queen.IsAlive || !Player.IsAlive) break;
+                        queen.DealBossDamage(Player);
+                    }
+                }
+            });
+            bossThread.IsBackground = true;
+            bossThread.Start();
+
+            // Player input loop for attacking with SPACE
+            while (queen.IsAlive && Player.IsAlive)
+            {
+                var keyInfo = Console.ReadKey(true);
+                if (keyInfo.Key == ConsoleKey.Spacebar)
+                {
+                    // Player attacks: deal 25 damage to queen
+                    lock (this)
+                    {
+                        queen.TakeDamage(25);
+                    }
+
+                    // flash the ASCII art red for 0.1s
+                    Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(queenAscii);
+                    Thread.Sleep(100);
+                    Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(queenAscii);
+                    DisplayStyle.WriteLine("Press SPACE to attack!", ConsoleColor.Yellow);
+                }
+            }
+
+            // Fight finished: stop boss thread
+            bossCts.Cancel();
+
+            if (!Player.IsAlive)
+            {
+                Console.Clear();
+                DisplayStyle.WriteLine("The Alien Queen's maw closes over you. Darkness.", ConsoleColor.Red);
+                DisplayStyle.WriteLine($"Cause of death: {Player.CauseOfDeath}", ConsoleColor.Red);
+                Console.WriteLine();
+                DisplayStyle.WriteLine("Press ENTER to continue:", ConsoleColor.Yellow);
+                Console.ReadLine();
+                StatsScreen.DisplayStats(this);
+                return;
+            }
+
+            if (!queen.IsAlive)
+            {
+                Console.Clear();
+                DisplayStyle.WriteLine("You have slain the Alien Queen! The ship goes quiet.", ConsoleColor.Green);
+                Console.WriteLine();
+                DisplayStyle.WriteLine("Press ENTER to continue:", ConsoleColor.Green);
+                Console.ReadLine();
+                StatsScreen.DisplayStats(this);
+                return;
+            }
         }
 
         public void TrackProgress(GameProgress progress)
