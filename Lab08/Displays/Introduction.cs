@@ -10,8 +10,7 @@ namespace Lab08.Displays
             Console.WriteLine("                A L I E N S              ");
             Console.WriteLine("=========================================");
             Console.WriteLine();
-            // have a slight delay time here
-            System.Threading.Thread.Sleep(3000);
+            System.Threading.Thread.Sleep(2000);
             Console.WriteLine("Press ENTER to continue...");
             Console.ReadLine();
 
@@ -20,23 +19,23 @@ namespace Lab08.Displays
             Console.WriteLine();
             Console.WriteLine("\"THIS IS THE COVENANT. WE ARE UNDER A-------- SEND H------ SIGNAL NOT CLEAR ---- SEND HELP ----\"");
             Console.WriteLine();
-            System.Threading.Thread.Sleep(3000);
+            System.Threading.Thread.Sleep(2000);
             Console.ResetColor();
             Console.WriteLine("The last transmission from the Covenant was garbled and incomplete.");
             Console.WriteLine("You are a simple radio transmitter technician, sent to investigate the disturbance.");
             Console.WriteLine();
-            System.Threading.Thread.Sleep(3000);
+            System.Threading.Thread.Sleep(2500);
             Console.WriteLine("As you dock with the Covenant, you notice that all lights on the ship are off.");
             Console.WriteLine("The airlock is functioning, so you cautiously make your way inside.");
             Console.WriteLine();
-            System.Threading.Thread.Sleep(3000);
+            System.Threading.Thread.Sleep(2500);
             Console.WriteLine("The ship's interior is dark and silent. Your flashlight barely penetrates the gloom.");
             Console.WriteLine("However, your motion detector indicates movement in the ship's cavernous interior.");
             Console.WriteLine();
-            System.Threading.Thread.Sleep(3000);
+            System.Threading.Thread.Sleep(2500);
             Console.WriteLine("Your mission is to locate the crew and determine the cause of the strange signal.");
             Console.WriteLine();
-            System.Threading.Thread.Sleep(2000);
+            System.Threading.Thread.Sleep(1500);
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("Press ENTER to continue...");
             Console.ReadLine();

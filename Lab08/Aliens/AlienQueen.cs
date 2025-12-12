@@ -41,7 +41,10 @@ namespace Lab08.Aliens
 		public void DealBossDamage(Player player)
 		{
 			if (!IsAlive)
+			{
+				player.Kill("Alien Queen");
 				return;
+			}
 			player.TakeDamage(20);
 		}
 	}

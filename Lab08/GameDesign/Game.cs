@@ -302,21 +302,13 @@ namespace Lab08.GameDesign
         {
             DisplayUI.ClearMessageHistory();
             DisplayStyle.WriteLine("You climb shakily into the Mech Suit. The controls feel intuitive as you take command of the powerful machine.", ConsoleColor.Cyan);
-            DisplayStyle.WriteLine("The ship trembles and groans as something inside the sealed area begins to pound on the walls.", ConsoleColor.Cyan);
-            DisplayStyle.WriteLine("Your finger hovers over the button to breach the sealed area. This is it.", ConsoleColor.Cyan);
-            Console.WriteLine();
-            System.Threading.Thread.Sleep(1000);
-            DisplayStyle.WriteLine("Press ENTER to continue", ConsoleColor.Yellow);
-            Console.ReadLine();
-            DisplayUI.ClearMessageHistory();
             DisplayStyle.WriteLine("A low, guttural rumble echoes from behind the sealed bulkhead. The hull shivers as the massive doors open.", ConsoleColor.Cyan);
+            DisplayStyle.WriteLine(" ", ConsoleColor.Black);
             DisplayStyle.WriteLine("From within the depths, a massive xenomorph emerges. The Queen hisses at you, second mouth coming forward menacingly.", ConsoleColor.Cyan);
             DisplayStyle.WriteLine("You grip the mech controls, raising its fists and reloading the hydrolics with a satisfying 'thunk'.", ConsoleColor.Cyan);
-            Console.WriteLine();
+            DisplayStyle.WriteLine(" ", ConsoleColor.Black);
             DisplayStyle.WriteLine("Press ENTER to fight!", ConsoleColor.Yellow);
             Console.ReadLine();
-            DisplayStyle.WriteLine("THE ALIEN QUEEN ATTACKS ON ITS OWN", ConsoleColor.Red);
-            DisplayStyle.WriteLine("Use SPACE to attack faster than she does!", ConsoleColor.Red);
 
             string queenAscii = "";
             try
@@ -353,9 +345,9 @@ namespace Lab08.GameDesign
             IsBossFightActive = true;
 
             // snapshot player's health, inventory and equipped weapon so we can restore later
-            int previousHealth = Player.Health;
-            var inventorySnapshot = Player.Inventory.Items.Select(i => new { Type = i.GetType(), Name = i.Name, Quantity = i.Quantity }).ToList();
-            string? previousEquippedName = Player.EquippedWeapon?.Name;
+            // int previousHealth = Player.Health;
+            // var inventorySnapshot = Player.Inventory.Items.Select(i => new { Type = i.GetType(), Name = i.Name, Quantity = i.Quantity }).ToList();
+            // string? previousEquippedName = Player.EquippedWeapon?.Name;
 
             Player.SetHealth(250); // temporary mech health!
             var queen = new AlienQueen(Player.Location);
@@ -413,7 +405,27 @@ namespace Lab08.GameDesign
             // player input loop for attacking with SPACE
             while (queen.IsAlive && Player.IsAlive)
             {
-                var keyInfo = Console.ReadKey(true);
+                ConsoleKeyInfo keyInfo;
+                try
+                {
+                    // wait for a key without blocking indefinitely so we can react to death
+                    while (!Console.KeyAvailable)
+                    {
+                        if (!queen.IsAlive || !Player.IsAlive) break;
+                        Thread.Sleep(50);
+                    }
+
+                    if (!queen.IsAlive || !Player.IsAlive) break;
+
+                    keyInfo = Console.ReadKey(true);
+                }
+                catch
+                {
+                    if (!queen.IsAlive || !Player.IsAlive) break;
+                    continue;
+                }
+
+
                 if (keyInfo.Key == ConsoleKey.Spacebar)
                 {
                     lock (this)
@@ -435,11 +447,11 @@ namespace Lab08.GameDesign
             // fight finished: stop boss thread
             bossCts.Cancel();
 
-            var psItem = Player.Inventory.GetItemByName("Power Supply");
-            if (psItem != null)
-            {
-                Player.Inventory.RemoveStack(psItem);
-            }
+            // var psItem = Player.Inventory.GetItemByName("Power Supply");
+            // if (psItem != null)
+            // {
+            //     Player.Inventory.RemoveStack(psItem);
+            // }
 
             if (!Player.IsAlive)
             {
@@ -455,40 +467,40 @@ namespace Lab08.GameDesign
 
             if (!queen.IsAlive)
             {
-                foreach (var it in Player.Inventory.Items.ToList())
-                {
-                    Player.Inventory.RemoveStack(it);
-                }
-                foreach (var snap in inventorySnapshot)
-                {
-                    if (snap.Name.Equals("Power Supply", StringComparison.OrdinalIgnoreCase))
-                        continue;
+            //     foreach (var it in Player.Inventory.Items.ToList())
+            //     {
+            //         Player.Inventory.RemoveStack(it);
+            //     }
+            //     foreach (var snap in inventorySnapshot)
+            //     {
+            //         if (snap.Name.Equals("Power Supply", StringComparison.OrdinalIgnoreCase))
+            //             continue;
 
-                    try
-                    {
-                        var obj = Activator.CreateInstance(snap.Type);
-                        if (obj is IItem newItem)
-                        {
-                            newItem.Quantity = snap.Quantity;
-                            Player.Inventory.AddItem(newItem);
-                        }
-                    }
-                    catch
-                    {
-                        // if we can't recreate via reflection, skip restoring that item
-                    }
-                }
-                if (!string.IsNullOrEmpty(previousEquippedName))
-                {
-                    var toEquip = Player.Inventory.GetItemByName(previousEquippedName);
-                    if (toEquip != null)
-                    {
-                        Player.EquipWeapon(toEquip);
-                    }
-                }
+            //         try
+            //         {
+            //             var obj = Activator.CreateInstance(snap.Type);
+            //             if (obj is IItem newItem)
+            //             {
+            //                 newItem.Quantity = snap.Quantity;
+            //                 Player.Inventory.AddItem(newItem);
+            //             }
+            //         }
+            //         catch
+            //         {
+            //             // if we can't recreate via reflection, skip restoring that item
+            //         }
+            //     }
+            //     if (!string.IsNullOrEmpty(previousEquippedName))
+            //     {
+            //         var toEquip = Player.Inventory.GetItemByName(previousEquippedName);
+            //         if (toEquip != null)
+            //         {
+            //             Player.EquipWeapon(toEquip);
+            //         }
+            //     }
 
-                Player.SetHealth(previousHealth);
-                Player.UpdateBulletsFromInventory();
+            //     Player.SetHealth(previousHealth);
+            //     Player.UpdateBulletsFromInventory();
 
                 Console.Clear();
                 DisplayStyle.WriteLine("You have slain the Alien Queen! The ship goes quiet.", ConsoleColor.Green);
