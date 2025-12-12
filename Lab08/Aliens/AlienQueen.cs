@@ -16,7 +16,7 @@ namespace Lab08.Aliens
 
 		public override void Act(Game game, Player player, Map map)
 		{
-			// Boss controlled by Game.StartBossFight; Act not used for the scripted fight.
+			// boss controlled by Game.StartBossFight; Act not used for the scripted fight.
 		}
 
 		public override void TakeDamage(int amount)
@@ -38,7 +38,6 @@ namespace Lab08.Aliens
 			}
 		}
 
-		// Queen's attack is a heavy hit (used by the boss thread)
 		public void DealBossDamage(Player player)
 		{
 			if (!IsAlive)

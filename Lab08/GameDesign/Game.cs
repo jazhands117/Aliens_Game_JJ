@@ -8,11 +8,11 @@ namespace Lab08.GameDesign
         private readonly ISense[] _senses;
         public IEnumerable<ISense> Senses => _senses;
         public bool VisitedMedbay { get; private set; } = false;
+        public bool StoryFinished { get; set; } = false;
         public bool VisitedMechBay { get; private set; } = false;
         public bool IsBossFightActive { get; private set; } = false;
         public GameProgress Progress { get; private set; } = GameProgress.None;
         public Alien? CurrentAlien { get; set; }
-        // flag to prevent double-moving aliens when an action already moved them (e.g., bullet roll)
         public bool AliensMovedThisTurn { get; set; } = false;
         public Dictionary<Location, List<IItem>> ItemsOnMap { get; } = new();
 
@@ -21,7 +21,6 @@ namespace Lab08.GameDesign
             Map = new Map();
                 Location randomStart = Map.GetRandomLocation();
             Map.SetStart(randomStart);
-            // give the player 5 starting bullets by default
             Player = new Player(randomStart, initialBullets: 5);
 
             Location airlock = Map.GetRoomLocation(RoomType.Airlock);
@@ -46,8 +45,6 @@ namespace Lab08.GameDesign
             };
 
             InitializeItems();
-
-            // ensure player's inventory contains 5 bullets and sync the count
             Player.Inventory.AddItem(new Lab08.Items.Bullets { Quantity = 5 });
             Player.UpdateBulletsFromInventory();
         }
@@ -56,14 +53,12 @@ namespace Lab08.GameDesign
         {
             while (!HasWon && Player.IsAlive)
             {
-                // collect status/messages, then draw the map (map prints first, then messages)
                 DisplayStatus();
                 DisplayUI.DrawMap(this);
 
                 ICommand command = GetUserInput();
                 command.Execute(this);
 
-                // Check all conditions and gather messages before redrawing
                 CheckForAliens();
                 CheckForRoomItems();
                 CheckForMechBay();
@@ -113,7 +108,6 @@ namespace Lab08.GameDesign
         private void InitializeItems()
         {
             var random = new Random();
-            // had AI teach me how to do func :D
             void PlaceItem(IItem item, Func<Location> locationSelect)
             {
                 Location loc = locationSelect();
@@ -125,7 +119,6 @@ namespace Lab08.GameDesign
             }
             // bullets
             Location airlockLoc = Map.GetRoomLocation(RoomType.Airlock);
-            // place first batch adjacent to airlock
             PlaceItem(new Bullets { Quantity = 5 }, () => Map.GetRandomNeighbor(airlockLoc));
             for (int i = 1; i < 3; i++)
             {
@@ -206,7 +199,6 @@ namespace Lab08.GameDesign
                     alien.Act(this, Player, Map);
                 }
             }
-            // move aliens unless they were already moved by an action (e.g., bullet roll)
             if (!AliensMovedThisTurn)
             {
                 foreach (Alien alien in Aliens)
@@ -225,12 +217,10 @@ namespace Lab08.GameDesign
             }
             else
             {
-                // reset the flag for the next turn
                 AliensMovedThisTurn = false;
             }
         }
 
-        // had LOTS of help here
         private void CheckForRoomItems()
         {
             if (ItemsOnMap.TryGetValue(Player.Location, out List<IItem>? itemsInRoom))
@@ -252,7 +242,6 @@ namespace Lab08.GameDesign
                     if (prompt.Choice)
                     {
                         Player.Inventory.AddItem(item);
-                        // if bullets were picked up, sync the player's bullets count
                         if (item.Name.Equals("Bullets", StringComparison.OrdinalIgnoreCase))
                         {
                             Player.UpdateBulletsFromInventory();
@@ -277,6 +266,7 @@ namespace Lab08.GameDesign
                 if (!VisitedMedbay)
                 {
                     VisitedMedbay = true;
+                    StoryFinished = true; 
                     DisplayStyle.WriteLine("You have reached the MedBay.", ConsoleColor.Green);
                     MedbayStory.DisplayMedbayStory();
                 }
@@ -318,42 +308,92 @@ namespace Lab08.GameDesign
             System.Threading.Thread.Sleep(1000);
             DisplayStyle.WriteLine("Press ENTER to continue", ConsoleColor.Yellow);
             Console.ReadLine();
-            // Begin the actual boss sequence narrative
             DisplayUI.ClearMessageHistory();
-            DisplayStyle.WriteLine("A low, guttural rumble echoes from behind the sealed bulkhead. The hull shivers.", ConsoleColor.Yellow);
-            DisplayStyle.WriteLine("You hear the skittering of many legs and a sound like a hundred chests inhaling at once.", ConsoleColor.Yellow);
-            DisplayStyle.WriteLine("Something massive moves within. The Queen is awake.", ConsoleColor.Yellow);
+            DisplayStyle.WriteLine("A low, guttural rumble echoes from behind the sealed bulkhead. The hull shivers as the massive doors open.", ConsoleColor.Cyan);
+            DisplayStyle.WriteLine("From within the depths, a massive xenomorph emerges. The Queen hisses at you, second mouth coming forward menacingly.", ConsoleColor.Cyan);
+            DisplayStyle.WriteLine("You grip the mech controls, raising its fists and reloading the hydrolics with a satisfying 'thunk'.", ConsoleColor.Cyan);
             Console.WriteLine();
-            DisplayStyle.WriteLine("Press ENTER to continue", ConsoleColor.Yellow);
+            DisplayStyle.WriteLine("Press ENTER to fight!", ConsoleColor.Yellow);
             Console.ReadLine();
+            DisplayStyle.WriteLine("THE ALIEN QUEEN ATTACKS ON ITS OWN", ConsoleColor.Red);
+            DisplayStyle.WriteLine("Use SPACE to attack faster than she does!", ConsoleColor.Red);
 
-            // Load the ASCII art for the queen
             string queenAscii = "";
             try
             {
-                queenAscii = File.ReadAllText(Path.Combine("Aliens", "Queen.txt"));
+                string[] possiblePaths = new[]
+                {
+                    Path.Combine("Aliens", "Queen.txt"),
+                    Path.Combine("..", "Lab08", "Aliens", "Queen.txt"),
+                    Path.Combine("Lab08", "Aliens", "Queen.txt"),
+                    Path.Combine("..", "..", "..", "..", "Lab08", "Aliens", "Queen.txt"),
+                    Path.Combine("..", "..", "..", "Aliens", "Queen.txt"),
+                };
+
+                foreach (var path in possiblePaths)
+                {
+                    if (File.Exists(path))
+                    {
+                        queenAscii = File.ReadAllText(path);
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(queenAscii))
+                {
+                    queenAscii = "[Alien Queen]";
+                }
             }
             catch
             {
                 queenAscii = "[Alien Queen]";
             }
 
-            // Prepare boss and player stats for the fight
             Player.MarkBossDiscovered();
             IsBossFightActive = true;
-            Player.SetHealth(250); // temporary boss-fight health
+
+            // snapshot player's health, inventory and equipped weapon so we can restore later
+            int previousHealth = Player.Health;
+            var inventorySnapshot = Player.Inventory.Items.Select(i => new { Type = i.GetType(), Name = i.Name, Quantity = i.Quantity }).ToList();
+            string? previousEquippedName = Player.EquippedWeapon?.Name;
+
+            Player.SetHealth(250); // temporary mech health!
             var queen = new AlienQueen(Player.Location);
 
-            // Print the queen art and prompt
+            DisplayUI.ClearMessageHistory();
             Console.Clear();
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(queenAscii);
-            DisplayStyle.WriteLine("Press SPACE to attack!", ConsoleColor.Yellow);
-
-            // Cancellation token to stop boss thread when fight ends
             var bossCts = new CancellationTokenSource();
 
-            // Boss attack thread: deals 20 damage every 1 second
+            void DrawBossFightScreen(bool flashRed = false)
+            {
+                Console.SetCursorPosition(0, 0);
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.Write(new string(' ', Console.BufferWidth * 10)); 
+                
+                Console.SetCursorPosition(0, 3);
+                Console.ForegroundColor = flashRed ? ConsoleColor.Red : ConsoleColor.White;
+                Console.WriteLine(queenAscii);
+                Console.SetCursorPosition(0, Console.CursorTop + 1);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Press SPACE to attack!");
+                Console.ResetColor();
+            }
+
+            DrawBossFightScreen();
+
+            try
+            {
+                int asciiStartRow = 3;
+                int asciiLines = queenAscii?.Split('\n').Length ?? 0;
+                int messageStartLine = asciiStartRow + asciiLines + 2;
+                DisplayUI.SetMessageStartLine(messageStartLine);
+            }
+            catch
+            {
+                // ignore if console operations fail in test environment
+            }
+
+            // boss attack thread: deals 20 damage every 1 second
             Thread bossThread = new Thread(() =>
             {
                 while (!bossCts.Token.IsCancellationRequested && queen.IsAlive && Player.IsAlive)
@@ -363,43 +403,48 @@ namespace Lab08.GameDesign
                     {
                         if (!queen.IsAlive || !Player.IsAlive) break;
                         queen.DealBossDamage(Player);
+                        DrawBossFightScreen();
                     }
                 }
             });
             bossThread.IsBackground = true;
             bossThread.Start();
 
-            // Player input loop for attacking with SPACE
+            // player input loop for attacking with SPACE
             while (queen.IsAlive && Player.IsAlive)
             {
                 var keyInfo = Console.ReadKey(true);
                 if (keyInfo.Key == ConsoleKey.Spacebar)
                 {
-                    // Player attacks: deal 25 damage to queen
                     lock (this)
                     {
                         queen.TakeDamage(25);
+                        Player.AddDamageDealt(25);
+                        DrawBossFightScreen(flashRed: true);
                     }
 
-                    // flash the ASCII art red for 0.1s
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(queenAscii);
                     Thread.Sleep(100);
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine(queenAscii);
-                    DisplayStyle.WriteLine("Press SPACE to attack!", ConsoleColor.Yellow);
+
+                    lock (this)
+                    {
+                        DrawBossFightScreen(flashRed: false);
+                    }
                 }
             }
 
-            // Fight finished: stop boss thread
+            // fight finished: stop boss thread
             bossCts.Cancel();
+
+            var psItem = Player.Inventory.GetItemByName("Power Supply");
+            if (psItem != null)
+            {
+                Player.Inventory.RemoveStack(psItem);
+            }
 
             if (!Player.IsAlive)
             {
                 Console.Clear();
-                DisplayStyle.WriteLine("The Alien Queen's maw closes over you. Darkness.", ConsoleColor.Red);
+                DisplayStyle.WriteLine("The Alien Queen's dripping fangs closes over your mech. The second jaw shoots forward, piercing your chest.", ConsoleColor.Red);
                 DisplayStyle.WriteLine($"Cause of death: {Player.CauseOfDeath}", ConsoleColor.Red);
                 Console.WriteLine();
                 DisplayStyle.WriteLine("Press ENTER to continue:", ConsoleColor.Yellow);
@@ -410,6 +455,41 @@ namespace Lab08.GameDesign
 
             if (!queen.IsAlive)
             {
+                foreach (var it in Player.Inventory.Items.ToList())
+                {
+                    Player.Inventory.RemoveStack(it);
+                }
+                foreach (var snap in inventorySnapshot)
+                {
+                    if (snap.Name.Equals("Power Supply", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    try
+                    {
+                        var obj = Activator.CreateInstance(snap.Type);
+                        if (obj is IItem newItem)
+                        {
+                            newItem.Quantity = snap.Quantity;
+                            Player.Inventory.AddItem(newItem);
+                        }
+                    }
+                    catch
+                    {
+                        // if we can't recreate via reflection, skip restoring that item
+                    }
+                }
+                if (!string.IsNullOrEmpty(previousEquippedName))
+                {
+                    var toEquip = Player.Inventory.GetItemByName(previousEquippedName);
+                    if (toEquip != null)
+                    {
+                        Player.EquipWeapon(toEquip);
+                    }
+                }
+
+                Player.SetHealth(previousHealth);
+                Player.UpdateBulletsFromInventory();
+
                 Console.Clear();
                 DisplayStyle.WriteLine("You have slain the Alien Queen! The ship goes quiet.", ConsoleColor.Green);
                 Console.WriteLine();
@@ -422,7 +502,7 @@ namespace Lab08.GameDesign
 
         public void TrackProgress(GameProgress progress)
         {
-            Progress |= progress; // AI helped here
+            Progress |= progress;
         }
         public bool HasWon => VisitedMedbay && CurrentRoom == RoomType.Airlock;
         public RoomType CurrentRoom => Map.GetRoomTypeAt(Player.Location);

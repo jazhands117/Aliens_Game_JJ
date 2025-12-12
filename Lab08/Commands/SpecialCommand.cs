@@ -3,7 +3,7 @@ namespace Lab08.Commands
     public class SpecialCommand : ICommand
     {
         private string _prompt;
-        public bool Choice { get; set; } // Allow setting for tests
+        public bool Choice { get; set; }
         private bool _isTest;
 
         public SpecialCommand(string prompt, bool isTest = false)

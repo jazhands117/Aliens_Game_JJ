@@ -38,10 +38,9 @@ namespace Lab08.Displays
             int cols = game.Map.Width;
             int tileWidth = 4; 
 
-            int legendStartX = cols * (tileWidth + 1) + 6; // place legend to the right of the grid
+            int legendStartX = cols * (tileWidth + 1) + 6;
             int legendStartY = 1;
 
-            // top border (write whole line at known Y to fully overwrite previous content)
             int lineY = 0;
             Console.SetCursorPosition(0, lineY);
             Console.ForegroundColor = ConsoleColor.Red;
@@ -53,13 +52,11 @@ namespace Lab08.Displays
                     topBorder += "+";
             }
             
-            // pad to full width to erase leftover characters
             if (topBorder.Length < Console.WindowWidth) topBorder = topBorder.PadRight(Console.WindowWidth);
             Console.WriteLine(topBorder);
 
             for (int row = 0; row < rows; row++)
             {
-                // content row
                 lineY = row * 2 + 1;
                 Console.SetCursorPosition(0, lineY);
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -106,7 +103,6 @@ namespace Lab08.Displays
 
                     if (row == playerLoc.Row && col == playerLoc.Column)
                     {
-                        // show player glyph on top of the tile
                         Console.ForegroundColor = ConsoleColor.Magenta;
                         glyph = " P ";
                     }
@@ -119,19 +115,16 @@ namespace Lab08.Displays
                     Console.Write(glyph);
                     Console.ResetColor();
 
-                    // vertical separator between tiles
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("|");
                     Console.ResetColor();
                 }
-                // clear rest of the line in case previous content was longer
                 int currentCol = Console.CursorLeft;
                 if (currentCol < Console.WindowWidth)
                 {
                     Console.Write(new string(' ', Console.WindowWidth - currentCol));
                 }
 
-                // separator row (below tiles)
                 lineY = row * 2 + 2;
                 Console.SetCursorPosition(0, lineY);
                 var sepLine = " ";
@@ -148,7 +141,6 @@ namespace Lab08.Displays
 
             Console.ResetColor();
 
-            // print legend beside the map
             string[] legendLines = new string[] {
                 "=== Legend ===",
                 "██  Airlock",
@@ -175,14 +167,12 @@ namespace Lab08.Displays
                 else if (line.Contains("Walls")) c = ConsoleColor.Red;
 
                 Console.ForegroundColor = c;
-                // write and pad to avoid leftover characters
                 string outLine = line;
                 if (outLine.Length < Console.WindowWidth - legendStartX) outLine = outLine.PadRight(Console.WindowWidth - legendStartX);
                 Console.Write(outLine);
                 Console.ResetColor();
             }
 
-            // set cursor to line after map and separators
             Console.SetCursorPosition(0, rows * 2 + 3);
         }
     }

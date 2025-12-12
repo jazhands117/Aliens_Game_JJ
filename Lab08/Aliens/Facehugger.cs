@@ -11,13 +11,11 @@ namespace Lab08.Aliens
             _random = new Random();
         }
 
-        // Test constructor that allows seeding random
         public Facehugger(Location position, Random random) : base(position, "Facehugger")
         {
             _random = random ?? new Random();
         }
 
-        // override Activate so we have access to the full Game object (monsters, fountain state, etc.)
         public override void Activate(Game game)
         {
             if (!Location.Equals(game.Player.Location))
@@ -55,8 +53,8 @@ namespace Lab08.Aliens
                 Console.ReadLine();
                 DisplayUI.ClearMessageHistory();
                 DisplayStyle.WriteLine("---- TIME CONSTRAINT ----", ConsoleColor.Yellow);
-                DisplayStyle.WriteLine("You must reach the MedBay within 15 turns.", ConsoleColor.Yellow);
-                player.Infect(15);
+                DisplayStyle.WriteLine("You must reach the MedBay.", ConsoleColor.Yellow);
+                player.Infect(25);
 
                 return;
             }
@@ -70,24 +68,21 @@ namespace Lab08.Aliens
                 Location startLocation = player.Location;
                 int manhattanDistance;
                 int attempts = 0;
-                const int maxAttempts = 100; // AI's version to prevent infinite loop
+                const int maxAttempts = 100; 
 
                 do
                 {
                     newPlayerLocation = startLocation;
-                    int targetDistance = _random.Next(2, 7); // random distance between 2 and 6
+                    int targetDistance = _random.Next(2, 7); 
 
-                    // Try to move the target distance
                     for (int i = 0; i < targetDistance; i++)
                     {
-                        // Bias movement towards increasing Manhattan distance
                         int dr = newPlayerLocation.Row - startLocation.Row;
                         int dc = newPlayerLocation.Column - startLocation.Column;
                         
                         Direction dir;
                         if (Math.Abs(dr) + Math.Abs(dc) < 2 || _random.Next(2) == 0)
                         {
-                            // Move away from start
                             if (Math.Abs(dr) < Math.Abs(dc))
                                 dir = dr < 0 ? Direction.South : Direction.North;
                             else
@@ -109,9 +104,8 @@ namespace Lab08.Aliens
                                       Math.Abs(newPlayerLocation.Column - startLocation.Column);
                     
                     attempts++;
-                } while (manhattanDistance < 2 && attempts < maxAttempts); // Keep trying until we get valid distance
+                } while (manhattanDistance < 2 && attempts < maxAttempts);
 
-                // If we couldn't find a valid move after max attempts, at least move 2 spaces in one direction
                 if (manhattanDistance < 2)
                 {
                     newPlayerLocation = startLocation;
@@ -144,7 +138,6 @@ namespace Lab08.Aliens
                         Console.WriteLine();
                         DisplayStyle.WriteLine("You rush blindly into a room. Suddenly, your foot misses the floor.", ConsoleColor.Red);
                         DisplayStyle.WriteLine("You fall straight into one of the holes in the floor, wrenching your ankle.", ConsoleColor.Red);
-                        // Only apply damage if the pit was previously undiscovered
                         if (!wasDiscovered)
                         {
                             player.TakeDamage(5);
@@ -159,7 +152,6 @@ namespace Lab08.Aliens
                 }
 
                 player.Location = newPlayerLocation;
-                // reveal the landing tile (player discovers it by entering)
                 map.DiscoverRoom(newPlayerLocation);
                 Console.WriteLine();
                 DisplayStyle.WriteLine("You finally stop running. The sudden silence is deafening.", ConsoleColor.Green);
@@ -172,29 +164,24 @@ namespace Lab08.Aliens
         
     public override void MoveTowardsPlayer(Game game)
         {
-            // move one step toward the player, diagonals allowed; do not move into player's current room
             var player = game.Player;
             int dr = Math.Sign(player.Location.Row - Location.Row);
             int dc = Math.Sign(player.Location.Column - Location.Column);
 
-            // candidate is one-step towards player (may be diagonal)
             Location candidate = new Location(Location.Row + dr, Location.Column + dc);
 
             if (!game.Map.IsWithinBounds(candidate) || IsLocationOccupied(game, candidate) || candidate.Equals(player.Location))
             {
-                // fallback to random diagonal move if blocked
                 MoveRandomly(game);
                 return;
             }
 
-            // clear previous monster mark so the red tile doesn't follow the alien
             DisplayMap.ClearMonsterMark(Location);
             Location = candidate;
         }
 
         public override void MoveRandomly(Game game)
         {
-            // try a random diagonal direction but avoid moving into the player's tile
             Direction possibleDirection = DirectionHelper.GetRandomDirection(allowDiagonals: true);
             Location candidate = Location.Move(possibleDirection);
             if (game.Map.IsWithinBounds(candidate) && !IsLocationOccupied(game, candidate) && !candidate.Equals(game.Player.Location))

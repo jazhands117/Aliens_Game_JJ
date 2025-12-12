@@ -10,22 +10,19 @@ namespace Lab08.Items
 
         public void Use(Game game)
         {
-            // Get Charge Nodes from inventory
             var chargeNodes = game.Player.Inventory.GetItemByName("Charge Nodes");
-            // Validate that we have Charge Nodes before trying to use them
+            // check that we have Charge Nodes before trying to use them
             if (chargeNodes == null || chargeNodes.Quantity <= 0)
             {
                 DisplayStyle.WriteLine("You have no Charge Nodes to power the Plasma Cutter!", ConsoleColor.Yellow);
                 return;
             }
 
-            // Only allow attack when there's a live alien present
             if (game.CurrentAlien != null && game.CurrentAlien.IsAlive)
             {
                 DisplayStyle.WriteLine("You fire the Plasma Cutter at the alien!", ConsoleColor.Yellow);
                 game.Player.DealDamage(game.CurrentAlien, this);
                 
-                // Remove one charge node after the attack; we know chargeNodes is not null here
                 game.Player.Inventory.RemoveItem(chargeNodes, 1);
             }
             else

@@ -146,7 +146,6 @@ namespace Lab08.GameDesign
             {
                 for (int dy = -1; dy <= 1; dy++)
                 {
-                    // skip the center position (the location itself)
                     if (dx == 0 && dy == 0) continue;
 
                     Location neighbor = new Location(loc.Row + dx, loc.Column + dy);

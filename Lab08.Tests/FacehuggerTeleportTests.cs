@@ -15,12 +15,10 @@ namespace Lab08.Tests
             player.Location = new Location(5, 5);
             int healthBefore = player.Health;
 
-            // Place Facehugger on player tile and force teleport by setting random seed
-            var seededRandom = new Random(42); // this seed should give teleport in test runs
+            var seededRandom = new Random(42); 
             var fh = new Facehugger(player.Location, seededRandom);
             game.Aliens[0] = fh;
 
-            // Remember player's start location to verify path tiles
             var startLocation = player.Location;
 
             // Record which tiles were discovered before teleport
@@ -35,13 +33,12 @@ namespace Lab08.Tests
                 }
             }
 
-            // Trigger teleport
             fh.Activate(game);
 
-            // Verify player moved
+            // verify player moved
             Assert.That(player.Location, Is.Not.EqualTo(startLocation), "Player should be teleported.");
 
-            // Verify only final tile is discovered
+            // verify ONLY final tile is discovered
             var newlyDiscovered = new HashSet<Location>();
             for (int r = 0; r < game.Map.Height; r++)
             {
@@ -52,8 +49,6 @@ namespace Lab08.Tests
                         newlyDiscovered.Add(loc);
                 }
             }
-
-            // Should only discover the landing tile
             Assert.That(newlyDiscovered.Count, Is.EqualTo(1), "Only one new tile should be discovered.");
             Assert.That(newlyDiscovered.Contains(player.Location), Is.True, "The newly discovered tile should be the landing location.");
         }
@@ -65,7 +60,6 @@ namespace Lab08.Tests
             var map = game.Map;
             var player = game.Player;
 
-            // Find a pit room
             Location pitLocation = new Location(0, 0);
             for (int r = 0; r < map.Height; r++)
             {
@@ -80,7 +74,7 @@ namespace Lab08.Tests
                 }
             }
 
-            // Test 1: Undiscovered pit should damage
+            // subtest 1: Undiscovered pit should damage
             player.Location = new Location(5, 5);
             var fh1 = new Facehugger(player.Location);
             int healthBefore = player.Health;
@@ -92,8 +86,7 @@ namespace Lab08.Tests
             }
             Assert.That(player.Health, Is.EqualTo(healthBefore - 5), "Should take damage in undiscovered pit.");
 
-            // Test 2: Discovered pit should not damage
-            // Create new game instance to get fresh player health
+            // subtest 2: Discovered pit should not damage
             var game2 = new Game();
             player = game2.Player;
             map = game2.Map;
@@ -114,7 +107,6 @@ namespace Lab08.Tests
             var player = game.Player;
             player.Location = new Location(5, 5);
 
-            // Run multiple teleports and verify distance
             for (int i = 0; i < 100; i++)
             {
                 var startLoc = new Location(5, 5);
@@ -125,11 +117,9 @@ namespace Lab08.Tests
                 
                 fh.Activate(game);
                 
-                // If we didn't teleport (got attack instead), skip
                 if (player.Location == startLoc)
                     continue;
                 
-                // Calculate Manhattan distance (since teleport uses cardinal moves)
                 int distance = Math.Abs(player.Location.Row - startLoc.Row) + 
                              Math.Abs(player.Location.Column - startLoc.Column);
                 

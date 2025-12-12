@@ -14,7 +14,6 @@ namespace Lab08.Aliens
             IsAlive = true;
         }
 
-        // add damage to player if in same location, remove instakill
         public override void Act(Game game, Player player, Map map)
         {
             if (Location.Equals(player.Location) && IsAlive)
@@ -24,7 +23,6 @@ namespace Lab08.Aliens
                 DisplayStyle.WriteLine("Out of the shadows, the Xenomorph attacks!", ConsoleColor.Red);
                 DisplayStyle.WriteLine("It hisses at you, its razor-sharp tail whipping through the air.", ConsoleColor.Red);
 
-                // COMBAT SEQUENCE
                 DisplayStyle.WriteLine("Press SPACE to attack the Xenomorph!", ConsoleColor.Yellow);
                 ConsoleKeyInfo keyInfo;
                 do
@@ -72,12 +70,10 @@ namespace Lab08.Aliens
 
         public override void MoveTowardsPlayer(Game game)
         {
-            // Move one step toward the player using cardinal steps only; do not step into player's room
             int dr = Math.Sign(game.Player.Location.Row - Location.Row);
             int dc = Math.Sign(game.Player.Location.Column - Location.Column);
 
             Location candidate;
-            // prefer the axis with larger distance to close gap (cardinal move)
             int rowDiff = Math.Abs(game.Player.Location.Row - Location.Row);
             int colDiff = Math.Abs(game.Player.Location.Column - Location.Column);
             if (rowDiff >= colDiff)

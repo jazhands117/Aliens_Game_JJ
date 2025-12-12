@@ -67,7 +67,7 @@ namespace Lab08.Tests
         public void Game_Starts_At_Airlock()
         {
             var game = new Game();
-            // Player location should match the map's Airlock location
+            // player location should match the map's Airlock location
             Assert.That(game.Player.Location, Is.EqualTo(game.Map.GetRoomLocation(RoomType.Airlock)));
         }
     }

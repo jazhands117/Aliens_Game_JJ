@@ -2,7 +2,6 @@ namespace Lab08.Items
 {
     public class PowerSupply : IItem
     {
-        // use a simple name that other code expects when searching inventory
         public string Name => "Power Supply";
         public string Description => "A heavy nuclear unit used to power the MechSuit.";
         public ItemType Type => ItemType.Utility;
@@ -21,7 +20,6 @@ namespace Lab08.Items
             }
         }
         
-        // Test helper that allows injecting mock commands
         public void UseWithCommand(Game game, SpecialCommand activateMechSuit, SpecialCommand bossFight)
         {
             RoomType type = game.Map.GetRoomTypeAt(game.Player.Location);

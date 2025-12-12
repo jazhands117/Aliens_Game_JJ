@@ -10,7 +10,6 @@ namespace Lab08.Tests
         {
             var game = new Game();
 
-            // Count bullet batches and total bullets
             int bulletBatches = 0;
             int totalBullets = 0;
             foreach (var kvp in game.ItemsOnMap)
@@ -28,7 +27,7 @@ namespace Lab08.Tests
             Assert.That(bulletBatches, Is.EqualTo(6), "There should be 6 bullet batches placed on the map.");
             Assert.That(totalBullets, Is.EqualTo(30), "Total bullets placed on the map should equal 30.");
 
-            // There should be at least one bullet batch adjacent (cardinal) to the Airlock
+            // there should be at least one bullet batch adjacent (cardinal) to the Airlock
             var airlock = game.Map.GetRoomLocation(RoomType.Airlock);
             bool foundAdjacent = false;
             foreach (var kvp in game.ItemsOnMap)
@@ -45,7 +44,7 @@ namespace Lab08.Tests
             }
             Assert.IsTrue(foundAdjacent, "At least one bullet batch should be adjacent to the Airlock.");
 
-            // Bandages: 5 single stacks + 1 stack of 3 in MedBay => total quantity 8
+            // bandages: 5 single stacks + 1 stack of 3 in MedBay => total quantity 8
             int bandageStacks = 0;
             int bandageTotal = 0;
             foreach (var kvp in game.ItemsOnMap)
@@ -62,7 +61,7 @@ namespace Lab08.Tests
             Assert.That(bandageStacks, Is.EqualTo(6), "There should be 6 bandage stacks (5 random singles + 1 MedBay stack).");
             Assert.That(bandageTotal, Is.EqualTo(8), "Total bandages should equal 8 (5 random + 3 in MedBay).");
 
-            // Weapons: ensure at least one WoodenBat, Machete, and PlasmaCutter present on the map
+            // weapons: ensure at least one WoodenBat, Machete, and PlasmaCutter present on the map
             bool hasWoodenBat = false, hasMachete = false, hasPlasmaCutter = false;
             foreach (var kvp in game.ItemsOnMap)
             {

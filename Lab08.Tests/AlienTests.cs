@@ -27,12 +27,12 @@ namespace Lab08.Tests
                 // activate the facehugger (this will either attack or teleport)
                 fh.Activate(game);
 
-                // Attack outcome: facehugger dies and player takes ~10 damage
+                // attack outcome: facehugger dies and player takes ~10 damage
                 if (!fh.IsAlive && game.Player.Health <= healthBefore - 10)
                 {
                     sawAttack = true;
                 }
-                // Teleport outcome: player location changed from start
+                // teleport outcome: player location changed from start
                 if (!game.Player.Location.Equals(new Location(6, 6)))
                 {
                     sawTeleport = true;

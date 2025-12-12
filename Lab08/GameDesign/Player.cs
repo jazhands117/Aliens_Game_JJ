@@ -68,8 +68,6 @@ namespace Lab08.GameDesign
             }
         }
 
-        // Heals the player by the given amount but caps at 50 (max health).
-        // Returns the actual amount healed (0 if none). Does not modify TotalDamageTaken.
         public int Heal(int amount)
         {
             if (amount <= 0)
@@ -104,7 +102,6 @@ namespace Lab08.GameDesign
             if (alien == null || !alien.IsAlive)
                 return;
 
-            // had AI help me on this line
             IItem? usedWeapon = weapon ?? EquippedWeapon;
             int damage;
             string attackDescription;
@@ -114,7 +111,7 @@ namespace Lab08.GameDesign
                 damage = usedWeapon.Damage;
                 attackDescription = $"You attack the alien with your {usedWeapon.Name}, dealing {damage} damage.";
 
-                // Special-case: Plasma Cutter consumes a Charge Node automatically when fired.
+                // special-case: Plasma Cutter consumes a Charge Node automatically when fired.
                 if (usedWeapon.Name.Equals("Plasma Cutter", StringComparison.OrdinalIgnoreCase))
                 {
                     var chargeNodes = Inventory.GetItemByName("Charge Nodes");
@@ -147,14 +144,18 @@ namespace Lab08.GameDesign
             }
         }
 
+        public void AddDamageDealt(int amount)
+        {
+            if (amount <= 0) return;
+            TotalDamageDealt = TotalDamageDealt + amount;
+        }
+
         public bool UseBullet()
         {
-            // bullets are stored in the Inventory as a Bullets item; consume one from inventory
             var bulletsItem = Inventory.GetItemByName("Bullets");
             if (bulletsItem == null || bulletsItem.Quantity <= 0)
                 return false;
 
-            // remove one bullet from the stack
             Inventory.RemoveItem(bulletsItem, 1);
             UpdateBulletsFromInventory();
             return true;
@@ -226,7 +227,7 @@ namespace Lab08.GameDesign
                 return; // already infected
             }
             isInfected = true;
-            infectionCountdown = turns; // number of turns before death
+            infectionCountdown = turns;
             DisplayStyle.WriteLine("You feel sharp pains in your chest. Something moves. Could it be your heart?", ConsoleColor.Yellow);
         }
 
@@ -291,7 +292,6 @@ namespace Lab08.GameDesign
             }
         }
 
-        // Allow temporarily setting player health (used for boss fights or special events)
         public void SetHealth(int value)
         {
             Health = value;

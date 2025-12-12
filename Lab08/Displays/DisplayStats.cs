@@ -25,7 +25,7 @@ namespace Lab08.Displays
             DisplayStyle.WriteLine("   Boss Discovered: " + bossStatus, ConsoleColor.Cyan);
 
             string storyDiscovered;
-            if (game.HasWon)
+            if (game.StoryFinished)
             {
                 storyDiscovered = "Yes";
             }

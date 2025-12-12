@@ -16,8 +16,7 @@ namespace Lab08.Tests
             var powerSupply = new PowerSupply { Quantity = 1 };
             player.Inventory.AddItem(powerSupply);
 
-            // Try to use power supply outside MechBay
-            // Find a normal room location
+            // try to use power supply outside MechBay
             Location normalRoom = new Location(5, 5);
             while (game.Map.GetRoomTypeAt(normalRoom) != RoomType.Normal)
             {
@@ -27,7 +26,7 @@ namespace Lab08.Tests
             
             powerSupply.Use(game);
             
-            // Should still be in inventory
+            // should still be in inventory!!
             Assert.That(player.Inventory.HasItem(powerSupply), Is.True, "Power Supply should remain in inventory when used outside MechBay");
             Assert.That(game.IsBossFightActive, Is.False, "Boss fight should not activate outside MechBay");
             Assert.That(game.Progress & GameProgress.MechActivated, Is.EqualTo(GameProgress.None), "MechActivated progress should not be set outside MechBay");
@@ -41,15 +40,12 @@ namespace Lab08.Tests
             var powerSupply = new PowerSupply { Quantity = 1 };
             player.Inventory.AddItem(powerSupply);
 
-            // Move player to MechBay
             var mechBayLocation = game.Map.GetRoomLocation(RoomType.MechBay);
             player.Location = mechBayLocation;
 
-            // Mock a special command for testing
             var testCommand = new SpecialCommand("Test", isTest: true) { Choice = true };
             powerSupply.UseWithCommand(game, testCommand, testCommand);
 
-            // Verify progress is tracked
             Assert.That(game.Progress.HasFlag(GameProgress.MechActivated), Is.True, "Using Power Supply should set MechActivated progress");
             Assert.That(game.IsBossFightActive, Is.True, "Boss fight should be active");
             Assert.That(player.Inventory.HasItem(powerSupply), Is.False, "Power Supply should be consumed");

@@ -9,7 +9,6 @@ namespace Lab08.Commands
             if (!items.Any())
             {
                 DisplayStyle.WriteLine("Your inventory is empty.", ConsoleColor.Magenta);
-                // draw map immediately so the buffered message is visible
                 DisplayUI.DrawMap(game);
                 return;
             }
@@ -19,7 +18,6 @@ namespace Lab08.Commands
                 var item = items[i];
                 DisplayStyle.WriteLine($"{i + 1}. {item.Name} (x{item.Quantity}) - {item.Description}", ConsoleColor.Magenta);
             }
-            // flush the inventory listing so the player can see it before we read input
             DisplayStyle.WriteLine("Enter the number of an item to use it, or press ESC to exit:", ConsoleColor.White);
             DisplayUI.DrawMap(game);
 
@@ -28,7 +26,7 @@ namespace Lab08.Commands
                 var keyInfo = Console.ReadKey(true);
                 if (keyInfo.Key == ConsoleKey.Escape)
                 {
-                    DisplayUI.ClearMessageHistory(); // Clear previous messages
+                    DisplayUI.ClearMessageHistory();
                     return;
                 }
 
